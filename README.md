@@ -1359,11 +1359,6 @@ de un tensor, facilitando su manipulación.
   tipo de dato si el modelo lo requiere, teniendo en cuenta la
   compatibilidad.
 
-Aquí tienes la sección de código estructurada en LaTeX, siguiendo el
-formato que has indicado:
-
-“‘latex
-
 ## División de Sets
 
 **Resumen Previo al Código:** En esta sección, se lleva a cabo la
@@ -1555,11 +1550,6 @@ relaciones entre los nodos son dinámicas y cambiantes.
 - La ventana de tiempo (input sequence length) utilizada en `MPNNLSTM`
   puede influir en el rendimiento del modelo, y su ajuste puede ser
   necesario para diferentes tipos de datos.
-
-Aquí tienes la sección de código estructurada en LaTeX, siguiendo el
-formato y el nivel de detalle que solicitaste:
-
-“‘latex
 
 ## Parametros de Entrenamiento del Modelo GNN
 
