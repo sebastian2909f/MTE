@@ -59,18 +59,11 @@ Formalmente, en cada iteración del MPNN:
 
 - Los nodos envían mensajes a sus vecinos.
 
-- Estos mensajes son agregados usando una función que resume la
-  información del vecindario.
+- Estos mensajes son agregados usando una función que resume la información del vecindario.
 
-- Luego, una función de actualización ajusta la representación de cada
-  nodo utilizando tanto la información previamente almacenada como el
-  mensaje recibido.
+- Luego, una función de actualización ajusta la representación de cada nodo utilizando tanto la información previamente almacenada como el mensaje recibido.
 
-Al final del proceso de pasos de mensajes, cada nodo tendrá una
-representación enriquecida que refleja tanto sus propias características
-como las de sus vecinos. Este enfoque se utiliza para generar embeddings
-no solo para nodos individuales, sino también para subgrafos o incluso
-grafos completos.
+Al final del proceso de pasos de mensajes, cada nodo tendrá una representación enriquecida que refleja tanto sus propias características como las de sus vecinos. Este enfoque se utiliza para generar embeddings no solo para nodos individuales, sino también para subgrafos o incluso grafos completos.
 
 *h*<sub>*u*</sub><sup>(*k* + 1)</sup> = UPDATE<sup>(*k*)</sup>(*h*<sub>*u*</sub><sup>(*k*)</sup>, AGGREGATE<sup>(*k*)</sup>({*h*<sub>*v*</sub><sup>(*k*)</sup> : ∀*v* ∈ *N*(*u*)}))
  = UPDATE<sup>(*k*)</sup>(*h*<sub>*u*</sub><sup>(*k*)</sup>, *m*<sub>*N*(*u*)</sub><sup>(*k*)</sup>)
@@ -83,38 +76,17 @@ grafos completos.
   <em>En una red neuronal de paso de mensajes, un nodo agrega información de sus vecinos, que a su vez también recopilan información de sus respectivos vecindarios. Esto crea una estructura en árbol   alrededor del nodo objetivo, reflejando la jerarquía de la propagación de mensajes en el grafo.</em>
 </p>
 
-
 ## Contexto: LSTM para Captura Temporal
 
-La arquitectura LSTM es una variación de las redes recurrentes, diseñada
-para capturar relaciones y patrones en secuencias temporales largas. En
-el contexto de los grafos temporales, el LSTM permite modelar cómo las
-representaciones de los nodos evolucionan a lo largo del tiempo. Esto es
-especialmente importante en situaciones donde la dinámica de las
-conexiones entre nodos cambia en función del tiempo o de eventos
-específicos.
+La arquitectura LSTM es una variación de las redes recurrentes, diseñada para capturar relaciones y patrones en secuencias temporales largas. En el contexto de los grafos temporales, el LSTM permite modelar cómo las representaciones de los nodos evolucionan a lo largo del tiempo. Esto es especialmente importante en situaciones donde la dinámica de las conexiones entre nodos cambia en función del tiempo o de eventos específicos.
 
 ## Objetivo del Algoritmo MPNNLSTM
 
-El objetivo del algoritmo MPNNLSTM es combinar la capacidad de los MPNN
-para aprender representaciones estructurales de un grafo en un momento
-dado, con la habilidad del LSTM para capturar dependencias temporales en
-la evolución de los nodos y aristas a lo largo del tiempo. De esta
-manera, el modelo no solo aprende la estructura de un grafo estático,
-sino también cómo esta estructura cambia con el tiempo.
+El objetivo del algoritmo MPNNLSTM es combinar la capacidad de los MPNN para aprender representaciones estructurales de un grafo en un momento dado, con la habilidad del LSTM para capturar dependencias temporales en la evolución de los nodos y aristas a lo largo del tiempo. De esta manera, el modelo no solo aprende la estructura de un grafo estático, sino también cómo esta estructura cambia con el tiempo.
 
-En esta implementación específica, el enfoque se aplica a la predicción
-de demanda eléctrica de diferentes tipos de clientes de una red
-eléctrica, donde se tienen en cuenta tanto las relaciones espaciales
-(distancias geográficas entre clientes) como las series temporales de
-consumo. Se crean grafos que representan las conexiones entre los
-clientes en función de su cercanía geográfica, y se utilizan estas
-conexiones para predecir el consumo futuro en diferentes horizontes
-temporales (1, 3, 6, 12 y 24 horas).
+En esta implementación específica, el enfoque se aplica a la predicción de demanda eléctrica de diferentes tipos de clientes de una red eléctrica, donde se tienen en cuenta tanto las relaciones espaciales (distancias geográficas entre clientes) como las series temporales de consumo. Se crean grafos que representan las conexiones entre los clientes en función de su cercanía geográfica, y se utilizan estas conexiones para predecir el consumo futuro en diferentes horizontes temporales (1, 3, 6, 12 y 24 horas).
 
-El modelo MPNNLSTM aprovecha esta representación temporal de los grafos
-para mejorar la precisión de las predicciones en comparación con modelos
-que solo consideran datos temporales, sin información espacial.
+El modelo MPNNLSTM aprovecha esta representación temporal de los grafos para mejorar la precisión de las predicciones en comparación con modelos que solo consideran datos temporales, sin información espacial.
 
 ## Flujo del Algoritmo
 
@@ -141,11 +113,7 @@ consumos energéticos.
 
 ## Importación de Librerías
 
-**Resumen Previo al Código:** Este bloque de código importa las
-bibliotecas necesarias para construir, manipular y evaluar grafos, así
-como para realizar cálculos y visualizar datos. Es una etapa de
-preparación esencial para cualquier proyecto que implique análisis de
-datos y redes neuronales.
+**Resumen Previo al Código:** Este bloque de código importa las bibliotecas necesarias para construir, manipular y evaluar grafos, así como para realizar cálculos y visualizar datos. Es una etapa de preparación esencial para cualquier proyecto que implique análisis de datos y redes neuronales.
 
 **Código:**
 
@@ -209,11 +177,7 @@ import csv
 
 ## Función de Secuencias
 
-**Resumen Previo al Código:** Esta sección define una función que divide
-secuencias de características y etiquetas en ventanas de entrada y
-salida. La función permite trabajar con datos de series temporales,
-facilitando la preparación de los datos para el entrenamiento de
-modelos.
+**Resumen Previo al Código:** Esta sección define una función que divide secuencias de características y etiquetas en ventanas de entrada y salida. La función permite trabajar con datos de series temporales, facilitando la preparación de los datos para el entrenamiento de modelos.
 
 **Código:**
 
@@ -280,10 +244,7 @@ def split_sequences(features, targets, n_steps_in, n_steps_out, n_sliding_steps,
 - `return np.array(X), np.array(y)`: Devuelve las secuencias de entrada
   y salida como arreglos de NumPy.
 
-**Referencias a los Conceptos Clave:** La función `split_sequences` es
-esencial para preparar datos de series temporales en formato adecuado
-para modelos de aprendizaje automático. Esto permite trabajar con
-ventanas deslizantes para la predicción de valores futuros.
+**Referencias a los Conceptos Clave:** La función `split_sequences` es esencial para preparar datos de series temporales en formato adecuado para modelos de aprendizaje automático. Esto permite trabajar con ventanas deslizantes para la predicción de valores futuros.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -298,10 +259,7 @@ ventanas deslizantes para la predicción de valores futuros.
 
 ## Función para Obtener Nodos Adyacentes
 
-**Resumen Previo al Código:** Esta función se utiliza para identificar
-los nodos adyacentes a un nodo dado en una matriz de adyacencia, que es
-una representación de un grafo. Es fundamental para el análisis de
-grafos, donde la conectividad entre nodos es clave.
+**Resumen Previo al Código:** Esta función se utiliza para identificar los nodos adyacentes a un nodo dado en una matriz de adyacencia, que es una representación de un grafo. Es fundamental para el análisis de grafos, donde la conectividad entre nodos es clave.
 
 **Código:**
 
@@ -339,8 +297,6 @@ def get_adjacent_nodes(adj_matrix, node):
 - **Estructura de Datos**: En lugar de listas, se podrían usar otras
   estructuras de datos como conjuntos o diccionarios para almacenar
   nodos adyacentes, dependiendo de los requisitos del análisis.
-
-document
 
 ## Función para Calcular Distancia Geográfica
 
@@ -492,11 +448,7 @@ for node in G.nodes:
 
 ## Construcción de Conexiones en el Grafo
 
-**Resumen Previo al Código:** En esta sección se itera sobre todos los
-pares de nodos en un grafo para calcular la distancia entre ellos
-utilizando sus coordenadas de latitud y longitud. Se agregan aristas
-entre nodos si la distancia es menor o igual a un radio de proximidad
-definido. Además, se crean conexiones específicas entre ciertos nodos.
+**Resumen Previo al Código:** En esta sección se itera sobre todos los pares de nodos en un grafo para calcular la distancia entre ellos utilizando sus coordenadas de latitud y longitud. Se agregan aristas entre nodos si la distancia es menor o igual a un radio de proximidad definido. Además, se crean conexiones específicas entre ciertos nodos.
 
 **Código:**
 
@@ -541,29 +493,25 @@ for nodo1 in ['Nodo92', 'Nodo93', 'Nodo95', 'Nodo96']:
 - Se repite un proceso similar para los nodos específicos (’Nodo92’,
   ’Nodo93’, ’Nodo95’, ’Nodo96’).
 
-**Referencias a los Conceptos Clave:** La construcción de conexiones en
-un grafo es fundamental para representar relaciones entre nodos. En este
-caso, la distancia entre nodos se utiliza para determinar si deben estar
-conectados, lo que puede ser crucial para análisis posteriores.
+**Referencias a los Conceptos Clave:** La construcción de conexiones en un grafo es fundamental para representar relaciones entre nodos. En este caso, la distancia entre nodos se utiliza para determinar si deben estar conectados, lo que puede ser crucial para análisis posteriores.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
-- `rad_prox`: Ajustar este valor cambia el rango dentro del cual se
-  permiten conexiones entre nodos.
+- `rad_prox`: Ajustar este valor cambia el rango dentro del cual se permiten conexiones entre nodos.
 
-- Se pueden incluir más nodos o cambiar las coordenadas para
-  experimentar con la densidad del grafo.
+- Se pueden incluir más nodos o cambiar las coordenadas para experimentar con la densidad del grafo.
 
-- La función `calcular_distancia` puede ser modificada para incluir
-  diferentes métricas de distancia si es necesario.
+- La función `calcular_distancia` puede ser modificada para incluir diferentes métricas de distancia si es necesario.
+
+<p align="center">
+  <img src="img/GRAFOS_ABC.PNG" alt="Gráfico de resultados" width="500"/>
+  <br>
+  <em>Estructura de grafo de tres casos de estudio. De izquierda a derecha: radios de 250 m, 500 m y 750 m. De arriba abajo: Caso Comercial, Caso Residencial y Caso Oficial</em>
+</p>
 
 ## Conversión de Grafo a Matriz de Adyacencia y Configuración de Visualización
 
-**Código:** Esta sección convierte un grafo en una matriz de adyacencia
-utilizando NumPy y luego crea un DataFrame para facilitar la
-visualización de la matriz. Además, configura las opciones de
-visualización de Pandas para mostrar todas las filas y columnas del
-DataFrame.
+**Código:** Esta sección convierte un grafo en una matriz de adyacencia utilizando NumPy y luego crea un DataFrame para facilitar la visualización de la matriz. Además, configura las opciones de visualización de Pandas para mostrar todas las filas y columnas del DataFrame.
 
 **Código:**
 
@@ -606,10 +554,7 @@ pd.set_option('display.max_columns', None)  # Mostrar todas las columnas
 
 ## Cálculo de Aristas y Filtrado de Nodos en el Grafo
 
-**Resumen Previo al Código:** Esta sección de código cuenta el número de
-aristas en un grafo, obtiene los nodos adyacentes a nodos de interés,
-elimina nodos sin información relevante según un radio de proximidad, y
-filtra nodos duplicados antes de ajustar el grafo final.
+**Resumen Previo al Código:** Esta sección de código cuenta el número de aristas en un grafo, obtiene los nodos adyacentes a nodos de interés, elimina nodos sin información relevante según un radio de proximidad, y filtra nodos duplicados antes de ajustar el grafo final.
 
 **Código:**
 
@@ -695,11 +640,7 @@ print(node_val)
 
 ## Conversión y Visualización de la Matriz de Adyacencia
 
-**Resumen Previo al Código:** Esta sección convierte un grafo en una
-matriz de adyacencia, configura las opciones de visualización de Pandas
-para mostrar todas las filas y columnas, y grafica la matriz de
-adyacencia utilizando Matplotlib para facilitar la inspección y análisis
-visual.
+**Resumen Previo al Código:** Esta sección convierte un grafo en una matriz de adyacencia, configura las opciones de visualización de Pandas para mostrar todas las filas y columnas, y grafica la matriz de adyacencia utilizando Matplotlib para facilitar la inspección y análisis visual.
 
 **Código:**
 
@@ -761,12 +702,15 @@ plt.show()
 - **Exportación de la Matriz**: Considerar la exportación de la matriz
   de adyacencia a otros formatos, como CSV, para su uso posterior.
 
+<p align="center">
+  <img src="img/SPARCE_MATRIX.png" alt="Gráfico de resultados" width="500"/>
+  <br>
+  <em>Matrices de abyacencia de nueve estructuras de grafos generadas para el estudio. De izquierda a derecha: radios de 250 m, 500 m y 750 m. De arriba abajo: Caso Comercial, Caso Residencial y Caso Oficial.</em>
+</p>
+
 ## Inicialización de Diccionario y Almacenamiento de Ubicaciones
 
-**Resumen Previo al Código:** Esta sección de código inicializa un
-diccionario para almacenar latitudes y longitudes de nodos
-seleccionados. Luego, itera sobre las filas de un DataFrame para agregar
-las coordenadas de los nodos que están en la lista ‘node_val‘.
+**Resumen Previo al Código:** Esta sección de código inicializa un diccionario para almacenar latitudes y longitudes de nodos seleccionados. Luego, itera sobre las filas de un DataFrame para agregar las coordenadas de los nodos que están en la lista ‘node_val‘.
 
 **Código:**
 
@@ -788,15 +732,11 @@ for i, a in df.iterrows():
 
 **Referencias a los Conceptos Clave:**
 
-- **Diccionario en Python**: Estructura de datos que almacena pares
-  clave-valor, útil para organizar datos relacionados.
+- **Diccionario en Python**: Estructura de datos que almacena pares clave-valor, útil para organizar datos relacionados.
 
-- **DataFrame de Pandas**: Estructura de datos que permite almacenar y
-  manipular datos tabulares, facilitando la iteración y acceso a datos
-  específicos.
+- **DataFrame de Pandas**: Estructura de datos que permite almacenar y manipular datos tabulares, facilitando la iteración y acceso a datos específicos.
 
-- **Iteración sobre DataFrame**: Uso de ‘iterrows‘ para recorrer cada
-  fila en un DataFrame, permitiendo operaciones basadas en condiciones.
+- **Iteración sobre DataFrame**: Uso de ‘iterrows‘ para recorrer cada fila en un DataFrame, permitiendo operaciones basadas en condiciones.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -812,10 +752,7 @@ for i, a in df.iterrows():
 
 ## Obtención de la Matriz de Índices de Bordes en Formato COO
 
-**Resumen Previo al Código:** Esta sección obtiene la matriz de índices
-de bordes en formato COO (Coordinate List) de una matriz de adyacencia,
-convirtiendo las coordenadas de las aristas en un tensor de PyTorch para
-su posterior uso en modelos de grafos.
+**Resumen Previo al Código:** Esta sección obtiene la matriz de índices de bordes en formato COO (Coordinate List) de una matriz de adyacencia, convirtiendo las coordenadas de las aristas en un tensor de PyTorch para su posterior uso en modelos de grafos.
 
 **Código:**
 
@@ -879,10 +816,7 @@ print(edge_index)
 
 ## Obtención de Distancias entre Nodos del Grafo
 
-**Resumen Previo al Código:** Esta sección de código calcula las
-distancias entre los nodos del grafo utilizando sus coordenadas
-geográficas. Las distancias se almacenan en una lista para su posterior
-análisis o uso.
+**Resumen Previo al Código:** Esta sección de código calcula las distancias entre los nodos del grafo utilizando sus coordenadas geográficas. Las distancias se almacenan en una lista para su posterior análisis o uso.
 
 **Código:**
 
@@ -932,10 +866,7 @@ for ij in range(len(aux3[0])):
 
 ## Obtención de Atributos de Borde
 
-**Resumen Previo al Código:** Esta sección obtiene los atributos de los
-bordes en el grafo, inicializando un arreglo con unos. Alternativamente,
-si se descomentan ciertas líneas y se comenta otra, los atributos de los
-bordes representarán la distancia inversa entre nodos.
+**Resumen Previo al Código:** Esta sección obtiene los atributos de los bordes en el grafo, inicializando un arreglo con unos. Alternativamente, si se descomentan ciertas líneas y se comenta otra, los atributos de los bordes representarán la distancia inversa entre nodos.
 
 **Código:**
 
@@ -996,12 +927,7 @@ print(edge_attr)
 
 ## Selección de Nodos en Base de Datos
 
-**Resumen Previo al Código:** En esta sección se seleccionan nodos
-específicos de un conjunto de datos almacenado en un archivo CSV. Se
-inicializan índices para seleccionar un rango de filas y se crean listas
-de columnas que incluyen una columna de fecha y las correspondientes a
-los nodos seleccionados. Después de la lectura del archivo, se realiza
-una copia del DataFrame para análisis posterior.
+**Resumen Previo al Código:** En esta sección se seleccionan nodos específicos de un conjunto de datos almacenado en un archivo CSV. Se inicializan índices para seleccionar un rango de filas y se crean listas de columnas que incluyen una columna de fecha y las correspondientes a los nodos seleccionados. Después de la lectura del archivo, se realiza una copia del DataFrame para análisis posterior.
 
 **Código:**
 
@@ -1068,28 +994,19 @@ print("Número de columnas:", num_columnas)
 - `num_filas, num_columnas = n4_pot_act.shape`: Obtiene las dimensiones
   del DataFrame resultante.
 
-**Referencias a los Conceptos Clave:** La selección de nodos de un
-conjunto de datos es fundamental para realizar análisis específicos en
-redes. En este caso, se seleccionan nodos de universidades específicas
-para realizar análisis sobre su rendimiento energético.
+**Referencias a los Conceptos Clave:** La selección de nodos de un conjunto de datos es fundamental para realizar análisis específicos en redes. En este caso, se seleccionan nodos de universidades específicas para realizar análisis sobre su rendimiento energético.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
-- `ini` y `inter`: Modificar estos índices puede cambiar el rango de
-  datos seleccionados.
+- `ini` y `inter`: Modificar estos índices puede cambiar el rango de datos seleccionados.
 
-- `node_val`: Cambiar los nodos seleccionados puede afectar los análisis
-  posteriores.
+- `node_val`: Cambiar los nodos seleccionados puede afectar los análisis posteriores.
 
-- Asegurarse de que el archivo CSV tenga las columnas correctas y en el
-  formato esperado para evitar errores en la carga de datos.
+- Asegurarse de que el archivo CSV tenga las columnas correctas y en el formato esperado para evitar errores en la carga de datos.
 
 ## Análisis Estadístico
 
-**Resumen Previo al Código:** Esta sección de código realiza un análisis
-estadístico sobre los datos de nodos seleccionados, creando un diagrama
-de caja para visualizar la distribución de los datos y determinando
-valores superiores a eliminar.
+**Resumen Previo al Código:** Esta sección de código realiza un análisis estadístico sobre los datos de nodos seleccionados, creando un diagrama de caja para visualizar la distribución de los datos y determinando valores superiores a eliminar.
 
 **Código:**
 
@@ -1141,10 +1058,7 @@ n3_mm = [whiskers[-1][1], whiskers[-2][1]]
 
 ## Corte de Valores Atípicos
 
-**Resumen Previo al Código:** Esta sección de código ajusta los valores
-de los datos de nodos para eliminar los valores atípicos mediante el uso
-de la función ‘clip‘ de Pandas. Esto se hace ajustando los valores a
-rangos específicos según el nodo y el radio de proximidad.
+**Resumen Previo al Código:** Esta sección de código ajusta los valores de los datos de nodos para eliminar los valores atípicos mediante el uso de la función ‘clip‘ de Pandas. Esto se hace ajustando los valores a rangos específicos según el nodo y el radio de proximidad.
 
 **Código:**
 
@@ -1225,13 +1139,7 @@ if rad_prox == 0.75:
 
 ## Normalización de Datos por Serie Temporal
 
-**Resumen Previo al Código:** Esta sección se encarga de normalizar los
-datos de un DataFrame que contiene información de nodos seleccionados.
-La normalización se realiza para garantizar que todos los valores estén
-en un rango común, lo que es fundamental para el entrenamiento de
-modelos de aprendizaje automático. Se crea una copia del DataFrame
-original y se verifica si hay valores nulos en cada columna antes de
-proceder con la normalización.
+**Resumen Previo al Código:** Esta sección se encarga de normalizar los datos de un DataFrame que contiene información de nodos seleccionados. La normalización se realiza para garantizar que todos los valores estén en un rango común, lo que es fundamental para el entrenamiento de modelos de aprendizaje automático. Se crea una copia del DataFrame original y se verifica si hay valores nulos en cada columna antes de proceder con la normalización.
 
 **Código:**
 
@@ -1270,11 +1178,13 @@ for i in range(n4_pot_act.shape[1]):
 - `n4_pot_act_nor[nc] = ...`: Normaliza los valores de la columna
   utilizando la fórmula de normalización min-max.
 
-**Referencias a los Conceptos Clave:** La normalización es una técnica
-común en el preprocesamiento de datos que ayuda a que los modelos de
-aprendizaje automático converjan más rápidamente y de manera más
-efectiva al evitar que las características con escalas grandes dominen a
-las que tienen escalas pequeñas.
+**Referencias a los Conceptos Clave:** La normalización es una técnica común en el preprocesamiento de datos que ayuda a que los modelos de aprendizaje automático converjan más rápidamente y de manera más efectiva al evitar que las características con escalas grandes dominen a las que tienen escalas pequeñas.
+
+<p align="center">
+  <img src="img/PERFILES_DEMANDA.png" alt="Gráfico de resultados" width="500"/>
+  <br>
+  <em>Perfil de la demanda eléctrica de los cuatro casos de estudio, que muestra la media diaria mensual normalizada de cada uno.</em>
+</p>
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -1289,11 +1199,7 @@ las que tienen escalas pequeñas.
 
 ## Cargar Datos de 4 Nodos (1 Mes)
 
-**Resumen Previo al Código:** En esta sección, se cargan los datos de
-energía normalizada para un conjunto de 4 nodos durante un mes. Se
-define la longitud de las secuencias de entrada y salida, así como el
-número de pasos deslizantes para crear las ventanas de datos necesarias
-para el entrenamiento del modelo.
+**Resumen Previo al Código:** En esta sección, se cargan los datos de energía normalizada para un conjunto de 4 nodos durante un mes. Se define la longitud de las secuencias de entrada y salida, así como el número de pasos deslizantes para crear las ventanas de datos necesarias para el entrenamiento del modelo.
 
 **Código:**
 
@@ -1339,11 +1245,7 @@ X_train, Y_train = split_sequences(
 - `split_sequences(...)`: Llama a la función para dividir el arreglo en
   secuencias de entrada (`X_train`) y salida (`Y_train`).
 
-**Referencias a los Conceptos Clave:** La preparación de datos mediante
-la creación de secuencias es esencial para entrenar modelos de series
-temporales, ya que permite que el modelo aprenda patrones en los datos a
-lo largo del tiempo, utilizando secuencias pasadas para predecir futuros
-valores.
+**Referencias a los Conceptos Clave:** La preparación de datos mediante la creación de secuencias es esencial para entrenar modelos de series temporales, ya que permite que el modelo aprenda patrones en los datos a lo largo del tiempo, utilizando secuencias pasadas para predecir futuros valores.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -1360,10 +1262,7 @@ valores.
 
 ## Índices de Nodos Objetivos
 
-**Resumen Previo al Código:** En esta sección, se obtienen los índices
-de los nodos objetivos a partir del DataFrame de energía normalizada.
-Esto es útil para acceder a los datos específicos de cada nodo en el
-proceso de modelado.
+**Resumen Previo al Código:** En esta sección, se obtienen los índices de los nodos objetivos a partir del DataFrame de energía normalizada. Esto es útil para acceder a los datos específicos de cada nodo en el proceso de modelado.
 
 **Código:**
 
@@ -1389,10 +1288,7 @@ print(f"Indice de nodos objetivos: {n1_ind}, {n2_ind}, {n3_ind}, {n4_ind}, {n5_i
 - Finalmente, se imprime la lista de índices para verificar que se han
   obtenido correctamente.
 
-**Referencias a los Conceptos Clave:** La función `get_loc` es un método
-de pandas que permite acceder a la posición de un elemento en el índice
-o en las columnas de un DataFrame, lo cual es fundamental para acceder a
-datos específicos en la manipulación de datos.
+**Referencias a los Conceptos Clave:** La función `get_loc` es un método de pandas que permite acceder a la posición de un elemento en el índice o en las columnas de un DataFrame, lo cual es fundamental para acceder a datos específicos en la manipulación de datos
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -1405,12 +1301,7 @@ datos específicos en la manipulación de datos.
 
 ## Dimensiones Adecuadas para Entrenamiento y Prueba
 
-**Resumen Previo al Código:** En esta sección, se ajustan las
-dimensiones de los conjuntos de datos de entrenamiento
-*X*<sub>train</sub> y *Y*<sub>train</sub> para garantizar que sean
-compatibles con el modelo de aprendizaje profundo que se utilizará. Esto
-implica la transposición de los datos y la conversión a tensores de
-PyTorch.
+**Resumen Previo al Código:** En esta sección, se ajustan las dimensiones de los conjuntos de datos de entrenamiento *X*<sub>train</sub> y *Y*<sub>train</sub> para garantizar que sean compatibles con el modelo de aprendizaje profundo que se utilizará. Esto implica la transposición de los datos y la conversión a tensores de PyTorch.
 
 **Código:**
 
