@@ -1,6 +1,6 @@
 <div align="justify">
 
-  # MTE
+  # Integración del Algoritmo MPNN-LSTM en Modelos de Predicción de demanda y generacion para el MTE (Modelo Transaccional de Energía no Convencional de Múltiples Agentes) en el Departamento de Nariño
 Este repositorio contiene modelos de generación y predicción de energía basados en redes neuronales de grafos (GNN), aplicados a datos eléctricos y ambientales de la ciudad de Pasto. Los enfoques implementados incluyen Message Passing Neural Network con LSTM (MPNNLSTM) y Graph Convolutional Network con LSTM (GCLSTM). La información empleada proviene de datos históricos de variables eléctricas (corrientes de línea, voltajes, potencia activa y reactiva) y ambientales (temperatura, radiación solar), con una malla de nodos geoespaciales optimizada para el análisis temporal y espacial. Se incluyen scripts para la limpieza, procesamiento y completado de datos, así como configuraciones optimizadas para predicciones a intervalos de 1 a 24 horas. Además, se aplicó una metodología de permutación de parámetros para identificar la mejor configuración en diferentes escenarios de predicción, evaluando horizontes temporales clave para aplicaciones prácticas como el despacho óptimo de energía y simulación de microrredes prosumidoras.
 
 La base de datos construida integra información temporal, espacial y contextual para modelar la demanda eléctrica urbana. Los datos temporales provienen de tres fuentes principales:
@@ -2255,11 +2255,7 @@ predicciones y los valores reales.
 
 ## Cálculo de Métricas de Error
 
-**Resumen Previo al Código:** En esta sección, se calculan y almacenan
-diversas métricas de error, como el Error Cuadrático Medio (MSE), el
-Error Absoluto Medio (MAE) y el Coeficiente de Determinación (R²) para
-cada nodo. Estas métricas permiten evaluar el rendimiento del modelo en
-función de las predicciones realizadas.
+**Resumen Previo al Código:** En esta sección, se calculan y almacenan diversas métricas de error, como el Error Cuadrático Medio (MSE), el Error Absoluto Medio (MAE) y el Coeficiente de Determinación (R²) para cada nodo. Estas métricas permiten evaluar el rendimiento del modelo en función de las predicciones realizadas.
 
 **Código:**
 
@@ -2325,10 +2321,7 @@ print(f'R2 promedio: {np.mean(r2_list)}')
 - `print(f’MSE promedio: ``np.mean(mse_list)``’)`: Imprime las métricas
   promedio al final.
 
-**Referencias a los Conceptos Clave:** El cálculo de métricas de error
-es crucial para evaluar el rendimiento de un modelo de aprendizaje
-automático, ya que proporciona una medida cuantitativa de la precisión
-de las predicciones realizadas.
+**Referencias a los Conceptos Clave:** El cálculo de métricas de error es crucial para evaluar el rendimiento de un modelo de aprendizaje automático, ya que proporciona una medida cuantitativa de la precisión de las predicciones realizadas.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -2342,13 +2335,15 @@ de las predicciones realizadas.
   personalizadas para evaluar aspectos específicos del rendimiento del
   modelo.
 
+<p align="center">
+  <img src="img/Train_model_8N_GConvGRU_Out96_In1344_Adam_Cell128_K2_E500.png" alt="Gráfico de resultados" width="500"/>
+  <br>
+  <em>Evolución del Error Cuadrático Medio (MSE) durante el entrenamiento y la validación del modelo.</em>
+</p>
+
 ## Gráfica de Comparación
 
-**Resumen Previo al Código:** En esta sección, se generan gráficos de
-comparación que visualizan las predicciones realizadas por el modelo
-frente a los valores reales para cada nodo. Los gráficos también
-incluyen métricas de error (MSE, MAE y R²) en los títulos, lo que
-permite una evaluación visual del rendimiento del modelo.
+**Resumen Previo al Código:** En esta sección, se generan gráficos de comparación que visualizan las predicciones realizadas por el modelo frente a los valores reales para cada nodo. Los gráficos también incluyen métricas de error (MSE, MAE y R²) en los títulos, lo que permite una evaluación visual del rendimiento del modelo.
 
 **Código:**
 
@@ -2408,10 +2403,7 @@ plt.savefig(r'OFICIAL/FIGURAS/Res_'+out_txt+'.png')
 - `plt.savefig(...)`: Guarda la figura generada en un archivo en el
   directorio especificado.
 
-**Referencias a los Conceptos Clave:** La visualización de resultados es
-una herramienta esencial para entender el rendimiento del modelo.
-Comparar las predicciones con los valores reales ayuda a identificar
-patrones de error y áreas de mejora.
+**Referencias a los Conceptos Clave:** La visualización de resultados es una herramienta esencial para entender el rendimiento del modelo. Comparar las predicciones con los valores reales ayuda a identificar patrones de error y áreas de mejora.
 
 **Posibles Variaciones o Parámetros Importantes:**
 
@@ -2423,6 +2415,12 @@ patrones de error y áreas de mejora.
 
 - Personalizar la apariencia de la gráfica (colores, estilos de línea,
   etc.) para mejorar la presentación visual de los resultados.
+
+<p align="center">
+  <img src="img/Res_model_4N_MPNNLSTM_SJ_Out60_In4320_Adam_Cell8_K1_E500_R1_SLI30.png" alt="Gráfico de resultados" width="500"/>
+  <br>
+  <em>Los resultados muestran los valores normalizados de la predicción del modelo previamente entrenado.</em>
+</p>
 
 ## Guardar Métricas
 
