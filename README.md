@@ -1,5 +1,25 @@
-# MTE
-Este repositorio contiene modelos de generación y predicción de energía basados en redes neuronales de grafos (GNN) aplicados a datos eléctricos y ambientales de la ciudad de Pasto. Los enfoques implementados incluyen Message Passing Neural Network con LSTM (MPNNLSTM) y Graph Convolutional Network con LSTM (GCLSTM). La información empleada proviene de datos históricos de variables eléctricas y ambientales, con una malla de nodos geoespaciales optimizada para el análisis temporal y espacial. Se incluyen scripts para la limpieza, procesamiento, y completado de datos, así como configuraciones optimizadas para predicciones a intervalos de 1 a 24 horas. Además, se aplicó una metodología de permutación de parámetros para identificar la mejor configuración en diferentes escenarios de predicción.
+<div align="justify">
+
+  # MTE
+Este repositorio contiene modelos de generación y predicción de energía basados en redes neuronales de grafos (GNN), aplicados a datos eléctricos y ambientales de la ciudad de Pasto. Los enfoques implementados incluyen Message Passing Neural Network con LSTM (MPNNLSTM) y Graph Convolutional Network con LSTM (GCLSTM). La información empleada proviene de datos históricos de variables eléctricas (corrientes de línea, voltajes, potencia activa y reactiva) y ambientales (temperatura, radiación solar), con una malla de nodos geoespaciales optimizada para el análisis temporal y espacial. Se incluyen scripts para la limpieza, procesamiento y completado de datos, así como configuraciones optimizadas para predicciones a intervalos de 1 a 24 horas. Además, se aplicó una metodología de permutación de parámetros para identificar la mejor configuración en diferentes escenarios de predicción, evaluando horizontes temporales clave para aplicaciones prácticas como el despacho óptimo de energía y simulación de microrredes prosumidoras.
+
+La base de datos construida integra información temporal, espacial y contextual para modelar la demanda eléctrica urbana. Los datos temporales provienen de tres fuentes principales:
+
+- Consumo histórico de lámparas LED y de sodio de 24 circuitos (1,986 transformadores) entre enero 2018 y diciembre 2022, proporcionados por la empresa de alumbrado público.
+- Series temporales de 152 medidores inteligentes (muestreo cada 15 minutos, enero 2020–junio 2023), incluyendo variables como potencia activa, corriente y voltaje por fase.
+- Infraestructura eléctrica detallada (clientes conectados, estratos socioeconómicos, capacidad energética) y datos temporales de alta frecuencia (muestreo cada 1 minuto, junio 2024 a marzo 2025) de 20 circuitos.
+  
+La dimensión espacial se estructura mediante un Sistema de Información Geográfica (SIG) que combina capas de infraestructura eléctrica (transformadores, líneas de distribución, áreas de influencia de subestaciones) y características urbanas (zonas residenciales, comerciales, densidad poblacional). Los grafos se construyen definiendo nodos como centroides del área de influencia de cada circuito y aristas ponderadas inversamente a la distancia geográfica , formalizadas mediante w<sub>ij</sub> = exp(-β · d<sub>ij</sub>) ​donde d<sub>ij</sub> es la distancia euclidiana entre nodos y β un parámetro de sensibilidad espacial.
+
+El módulo de aprendizaje automático propone un enfoque para desarrollar modelos que integren dependencias espacio-temporales en la predicción de demanda. Para ello, se entrenan modelos MPNNLSTM y GCLSTM, optimizando parámetros mediante búsqueda por permutación para horizontes de 1, 3, 6, 12 y 24 horas . Los resultados se comparan con un modelo base CNN-LSTM (solo datos temporales), validando la mejora estadística al incorporar la dimensión espacial. Los grafos se estructuran con una distancia fija de 2 km entre nodos únicamente para el caso de estudio de circuitos eléctricos, priorizando interacciones locales y reduciendo el ruido de conexiones distantes. En contraste, para los casos de estudio residencial, comercial y oficial, se exploraron radios variables de 250 m, 500 m y 750 m, diseñados para capturar relaciones entre clientes cercanos y distantes dentro de la red eléctrica. Para cada caso de estudio (residencial, comercial, oficial y circuitos), se entrenan modelos independientes, ajustando parámetros según las características específicas de los circuitos o usuarios asignados. Esta estrategia permite adaptar la complejidad del modelo a la heterogeneidad de la demanda, mejorando la precisión predictiva en escenarios con distintas escalas espaciales.
+
+La metodología se limita a los casos de estudio mencionados debido a la baja representación de usuarios industriales en el área urbana. Aunque estos representan el 11% de la base de datos, sus ubicaciones dispersas dificultan la captura de relaciones espaciales significativas con los radios seleccionados (250 m–750 m). La estructura de grafos, con nodos centrados en áreas de influencia y conexiones ponderadas por proximidad geográfica, demostró ser clave para capturar correlaciones locales entre circuitos y subestaciones, posicionando a las GNNT como herramientas esenciales para mejorar la precisión en horizontes temporales variables y adaptarse a dinámicas de demanda no lineales.
+
+<p align="center">
+  <img src="img/METODOLOGIA.png" alt="Metodologia" width="1000"/>
+  <br>
+  <em>Esquema de la metodología propuesta para incorporar información espacial al estudio de la demanda..</em>
+</p>
 
 # Introducción
 
@@ -29,24 +49,11 @@ Cada uno de estos grafos puede utilizarse para realizar predicciones, como ident
 
 # Contexto y Objetivos
 
-El algoritmo MPNNLSTM combina dos potentes enfoques en el análisis de
-datos: la capacidad de los **Message Passing Neural Networks (MPNN)**
-para modelar relaciones complejas en grafos y la habilidad de las **Long
-Short-Term Memory (LSTM)** para capturar dependencias temporales. Este
-enfoque es ideal para analizar grafos temporales, donde no solo es
-importante entender las interacciones estructurales entre los nodos,
-sino también cómo estas interacciones cambian y evolucionan con el
-tiempo.
+El algoritmo MPNNLSTM combina dos potentes enfoques en el análisis de datos: la capacidad de los **Message Passing Neural Networks (MPNN)** para modelar relaciones complejas en grafos y la habilidad de las **Long Short-Term Memory (LSTM)** para capturar dependencias temporales. Este enfoque es ideal para analizar grafos temporales, donde no solo es importante entender las interacciones estructurales entre los nodos, sino también cómo estas interacciones cambian y evolucionan con el tiempo.
 
 ## Contexto: Neural Message Passing
 
-Los Message Passing Neural Networks (MPNN) son un tipo de red neuronal
-diseñada específicamente para trabajar con datos estructurados en
-grafos. Durante cada iteración del paso de mensajes, cada nodo en el
-grafo actualiza su representación (embedding) en función de la
-información agregada de sus vecinos en el grafo. Esto permite capturar
-la estructura local del grafo y cómo las relaciones entre nodos impactan
-sus características.
+Los Message Passing Neural Networks (MPNN) son un tipo de red neuronal diseñada específicamente para trabajar con datos estructurados en grafos. Durante cada iteración del paso de mensajes, cada nodo en el grafo actualiza su representación (embedding) en función de la información agregada de sus vecinos en el grafo. Esto permite capturar la estructura local del grafo y cómo las relaciones entre nodos impactan sus características.
 
 Formalmente, en cada iteración del MPNN:
 
@@ -70,14 +77,12 @@ grafos completos.
 
 *z*<sub>*u*</sub> = *h*<sub>*u*</sub><sup>(*K*)</sup>,  ∀*u* ∈ *V*
 
-<figure id="ima:perfil">
-<img src="IMA/MPNN_G.png" style="width:70.0%" />
-<figcaption>En una red neuronal de paso de mensajes, un nodo agrega
-información de sus vecinos, que a su vez también recopilan información
-de sus respectivos vecindarios. Esto crea una estructura en árbol
-alrededor del nodo objetivo, reflejando la jerarquía de la propagación
-de mensajes en el grafo..</figcaption>
-</figure>
+<p align="center">
+  <img src="img/MPNN_G.png" alt="Gráfico de resultados" width="500"/>
+  <br>
+  <em>En una red neuronal de paso de mensajes, un nodo agrega información de sus vecinos, que a su vez también recopilan información de sus respectivos vecindarios. Esto crea una estructura en árbol   alrededor del nodo objetivo, reflejando la jerarquía de la propagación de mensajes en el grafo.</em>
+</p>
+
 
 ## Contexto: LSTM para Captura Temporal
 
@@ -2667,3 +2672,4 @@ Para aprovechar al máximo los modernos modelos de aprendizaje automático para 
 
 El campo del aprendizaje de representaciones gráficas ha avanzado considerablemente en las últimas décadas, pudiendo dividirse en tres generaciones: incrustación gráfica tradicional, incrustación gráfica moderna y aprendizaje profundo sobre grafos. La primera generación se centra en técnicas clásicas de reducción de dimensiones en grafos, mientras que la segunda se basa en extensiones exitosas de métodos como Word2Vec al dominio gráfico. La tercera generación, centrada en redes neuronales gráficas (GNN), ha facilitado enormemente las tareas
 computacionales en grafos, abarcando tanto tareas centradas en nodos como en grafos. Los avances revolucionarios traídos por las GNN han contribuido significativamente a la adopción y el rendimiento en dominios de aplicación clásica como sistemas de recomendación y análisis de redes sociales.
+</div>
