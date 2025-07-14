@@ -146,7 +146,7 @@ $$
 
 Donde:
 - $\tilde{A} = A + I_N$ (matriz de adyacencia con auto-conexiones)
-- $\tilde{D}_{ii} = \sum_j \tilde{A}_{ij}$ (matriz de grados renormalizada)
+- ![Fórmula blanca](https://latex.codecogs.com/svg.image?\color{White}\tilde{D}_{ii}%20=%20\sum_j%20\tilde{A}_{ij}) (matriz de grados renormalizada)
 - $W^{(l)}$ es la matriz de pesos entrenables de la capa $l$
 - $\sigma(\cdot)$ es la función de activación (típicamente ReLU)
 
@@ -191,9 +191,8 @@ $$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$$
 **Puerta de entrada:**
 $$i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$$
 
-**Estado candidato:**
-
-$$\tilde{C}_t = \tanh(W_c \cdot [h_{t-1}, x_t] + b_c)$$
+**Estado candidato:** 
+![Fórmula blanca](https://latex.codecogs.com/svg.image?\color{White}\tilde{C}_t%20=%20\tanh(W_c%20\cdot%20[h_{t-1},%20x_t]%20+%20b_c))
 
 **Actualización del estado de celda:**
 $$C_t = f_t \cdot C_{t-1} + i_t \cdot \tilde{C}_t$$
@@ -235,32 +234,55 @@ En el contexto específico de la predicción de demanda eléctrica, el LSTM perm
 
 ## Objetivo del Algoritmo MPNNLSTM
 
-El objetivo del algoritmo MPNNLSTM es combinar la capacidad de los MPNN para aprender representaciones estructurales de un grafo en un momento dado, con la habilidad del LSTM para capturar dependencias temporales en la evolución de los nodos y aristas a lo largo del tiempo. De esta manera, el modelo no solo aprende la estructura de un grafo estático, sino también cómo esta estructura cambia con el tiempo.
+El objetivo de los algoritmos MPNNLSTM y GCLSTM es integrar las capacidades espaciales de las redes neuronales de grafos (MPNN o GCN) con la memoria de largo plazo de las LSTM para modelar y predecir series de datos espacio-temporales. En particular, ambos modelos buscan:
 
-En esta implementación específica, el enfoque se aplica a la predicción de demanda eléctrica de diferentes tipos de clientes de una red eléctrica, donde se tienen en cuenta tanto las relaciones espaciales (distancias geográficas entre clientes) como las series temporales de consumo. Se crean grafos que representan las conexiones entre los clientes en función de su cercanía geográfica, y se utilizan estas conexiones para predecir el consumo futuro en diferentes horizontes temporales (1, 3, 6, 12 y 24 horas).
+1. Capturar las **relaciones estructurales** entre nodos en un grafo construido según la proximidad geográfica de clientes (residenciales, comerciales y oficiales) en una red eléctrica urbana.
+2. Aprender la **dinámica temporal** de los patrones de consumo eléctrico mediante la propagación de estados ocultos y celdas de memoria a lo largo de horizontes de predicción de 1, 3, 6, 12 y 24 horas.
+3. Mejorar la precisión de las previsiones de demanda eléctrica en comparación con modelos que solo emplean datos temporales, al incorporar explícitamente la información espacial y su evolución.
 
-El modelo MPNNLSTM aprovecha esta representación temporal de los grafos para mejorar la precisión de las predicciones en comparación con modelos que solo consideran datos temporales, sin información espacial.
+## Flujo del Algoritmo MPNNLSTM y GCLSTM
 
-## Flujo del Algoritmo
+El flujo de ambos algoritmos puede describirse en cuatro etapas principales, detallando cada paso con su propósito y las operaciones asociadas. Todas las ecuaciones están formateadas en línea usando el estilo `$ecuacion$` para facilitar su uso en GitHub Markdown.
 
-- Construcción del grafo: Los nodos representan clientes de la red
-  eléctrica y las aristas reflejan la cercanía geográfica entre ellos.
+### 1. Construcción del grafo espacial
 
-- Message Passing (MPNN): Se realiza una agregación de la información de
-  los vecinos de cada nodo para generar una representación enriquecida
-  del grafo.
+- **Selección de nodos:** cada nodo representa un cliente (residencial, comercial u oficial).
+- **Cálculo de distancias:** se computa la distancia euclidiana entre el nodo objetivo y todos los demás clientes.
+- **Definición de radio y aristas:** para un radio dado (250 m, 500 m o 750 m), se conecta el nodo objetivo con todos los clientes dentro de ese círculo.
+- **Asignación de pesos:** a cada arista se le asigna un peso inversamente proporcional a la distancia, enfatizando la influencia de vecinos más cercanos.
 
-- Captura temporal (LSTM): El modelo LSTM procesa las representaciones
-  de los nodos a lo largo del tiempo para aprender la evolución temporal
-  de las interacciones entre clientes.
+### 2. Agregación espacial
 
-- Predicción: Usando las representaciones aprendidas, se realizan
-  predicciones sobre el consumo de energía futura en diferentes
-  horizontes temporales.
+- **MPNN (Message Passing Neural Network):**
+  - En cada paso de tiempo $t$, cada nodo $u$ envía mensajes a sus vecinos $N(u)$ calculando $m_{uv}^{(t)} = M(h_u^{(t)},\,h_v^{(t)},\,e_{uv})$.
+  - Agregación: $m_u^{(t+1)} = \sum_{v\in N(u)} m_{uv}^{(t)}$.
+  - Actualización: $h_u^{(t+1)} = U(h_u^{(t)},\,m_u^{(t+1)})$.
 
-El resultado es un modelo que no solo tiene en cuenta la estructura
-espacial de los clientes, sino también las dinámicas temporales de sus
-consumos energéticos.
+- **GCN (Graph Convolutional Network) en GCLSTM:**
+  - Convolución espectral local de primer orden: $H^{(l+1)} = \sigma\left(\widetilde{D}^{-1/2}\,\widetilde{A}\,\widetilde{D}^{-1/2}\,H^{(l)}\,W^{(l)}\right)$
+  - Donde $\widetilde{A} = A + I$, $\widetilde{D}_{ii} = \sum_j \widetilde{A}_{ij}$.
+  - Esta operación recopila y normaliza la información de vecinos inmediatos.
+
+### 3. Captura temporal (LSTM)
+
+- **Entrada secuencial:** las representaciones espaciales $H_t$ generadas en el paso anterior se consideran como secuencia temporal.
+- **Puertas y celdas:** para cada instante $t$, el LSTM calcula:
+  - Puerta de olvido: $f_t = \sigma(W_f\,[h_{t-1},\,x_t] + b_f)$
+  - Puerta de entrada: $i_t = \sigma(W_i\,[h_{t-1},\,x_t] + b_i)$
+  - Estado candidato: $\widetilde{C}_t = \tanh(W_C\,[h_{t-1},\,x_t] + b_C)$
+  - Actualización de celda: $C_t = f_t \odot C_{t-1} + i_t \odot \widetilde{C}_t$
+  - Puerta de salida: $o_t = \sigma(W_o\,[h_{t-1},\,x_t] + b_o)$
+  - Estado oculto: $h_t = o_t \odot \tanh(C_t)$
+
+Así, el LSTM retiene y filtra información relevante de pasos anteriores.
+
+### 4. Predicción y salida
+
+- **Capa lineal final:** la última representación $h_T$ se pasa por una capa fully-connected: $\hat{y} = W_{\text{out}}\,h_T + b_{\text{out}}$
+- **Horizontes múltiples:** se generan predicciones para horizontes de 1, 3, 6, 12 y 24 horas.
+- **Evaluación:** se calculan métricas (MSE, MAE, $R^2$) comparando $\hat{y}$ con la demanda real.
+
+Este flujo se aplica de manera idéntica en MPNNLSTM y GCLSTM, diferenciándose únicamente en la etapa de agregación espacial: MPNNLSTM emplea pasos de mensaje iterativos, mientras que GCLSTM utiliza convoluciones espectrales de primer orden en el grafo.
 
 # Desglose del Código
 
