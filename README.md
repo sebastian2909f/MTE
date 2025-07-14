@@ -260,7 +260,8 @@ El flujo de ambos algoritmos puede describirse en cuatro etapas principales, det
 
 - **GCN (Graph Convolutional Network) en GCLSTM:**
   - Convolución espectral local de primer orden: $H^{(l+1)} = \sigma\left(\widetilde{D}^{-1/2}\,\widetilde{A}\,\widetilde{D}^{-1/2}\,H^{(l)}\,W^{(l)}\right)$
-  - Donde $\widetilde{A} = A + I$, $\widetilde{D}_{ii} = \sum_j \widetilde{A}_{ij}$.
+  - Donde $\widetilde{A} = A + I$, ![SVG blanco](https://latex.codecogs.com/svg.image?\color{White}\widetilde{D}_{ii}%20=%20\sum_j%20\widetilde{A}_{ij})
+.
   - Esta operación recopila y normaliza la información de vecinos inmediatos.
 
 ### 3. Captura temporal (LSTM)
