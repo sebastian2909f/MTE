@@ -232,7 +232,7 @@ En el contexto de grafos temporales, el LSTM se integra con las operaciones de a
 
 En el contexto específico de la predicción de demanda eléctrica, el LSTM permite capturar patrones temporales complejos como ciclos diarios, semanales y estacionales, mientras que su integración con componentes de grafos facilita el modelado de las interdependencias espaciales entre usuarios de la red eléctrica.
 
-## Objetivo del Algoritmo MPNNLSTM
+## Objetivo del Algoritmo MPNNLSTM y GCLSTM
 
 El objetivo de los algoritmos MPNNLSTM y GCLSTM es integrar las capacidades espaciales de las redes neuronales de grafos (MPNN o GCN) con la memoria de largo plazo de las LSTM para modelar y predecir series de datos espacio-temporales. En particular, ambos modelos buscan:
 
@@ -242,7 +242,7 @@ El objetivo de los algoritmos MPNNLSTM y GCLSTM es integrar las capacidades espa
 
 ## Flujo del Algoritmo MPNNLSTM y GCLSTM
 
-El flujo de ambos algoritmos puede describirse en cuatro etapas principales, detallando cada paso con su propósito y las operaciones asociadas. Todas las ecuaciones están formateadas en línea usando el estilo `$ecuacion$` para facilitar su uso en GitHub Markdown.
+El flujo de ambos algoritmos puede describirse en cuatro etapas principales, detallando cada paso con su propósito y las operaciones asociadas.
 
 ### 1. Construcción del grafo espacial
 
@@ -270,7 +270,7 @@ El flujo de ambos algoritmos puede describirse en cuatro etapas principales, det
 - **Puertas y celdas:** para cada instante $t$, el LSTM calcula:
   - Puerta de olvido: $f_t = \sigma(W_f\,[h_{t-1},\,x_t] + b_f)$
   - Puerta de entrada: $i_t = \sigma(W_i\,[h_{t-1},\,x_t] + b_i)$
-  - Estado candidato: $\widetilde{C}_t = \tanh(W_C\,[h_{t-1},\,x_t] + b_C)$
+  - Estado candidato: ![SVG blanco](https://latex.codecogs.com/svg.image?\color{White}\widetilde{C}_t%20=%20\tanh\left(W_C%20\cdot%20[h_{t-1},%20x_t]%20+%20b_C\right))
   - Actualización de celda: $C_t = f_t \odot C_{t-1} + i_t \odot \widetilde{C}_t$
   - Puerta de salida: $o_t = \sigma(W_o\,[h_{t-1},\,x_t] + b_o)$
   - Estado oculto: $h_t = o_t \odot \tanh(C_t)$
