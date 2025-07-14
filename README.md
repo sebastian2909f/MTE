@@ -11,7 +11,7 @@ La base de datos construida integra información temporal, espacial y contextual
   
 La dimensión espacial se estructura mediante un Sistema de Información Geográfica (SIG) que combina capas de infraestructura eléctrica (transformadores, líneas de distribución, áreas de influencia de subestaciones) y características urbanas (zonas residenciales, comerciales, densidad poblacional). Los grafos se construyen definiendo nodos como centroides del área de influencia de cada circuito y aristas ponderadas inversamente a la distancia geográfica , formalizadas mediante w<sub>ij</sub> = exp(-β · d<sub>ij</sub>) ​donde d<sub>ij</sub> es la distancia euclidiana entre nodos y β un parámetro de sensibilidad espacial.
 
-El módulo de aprendizaje automático propone un enfoque para desarrollar modelos que integren dependencias espacio-temporales en la predicción de demanda. Para ello, se entrenan modelos MPNNLSTM y GCLSTM, optimizando parámetros mediante búsqueda por permutación para horizontes de 1, 3, 6, 12 y 24 horas . Los resultados se comparan con un modelo base CNN-LSTM (solo datos temporales), validando la mejora estadística al incorporar la dimensión espacial. Los grafos se estructuran con una distancia fija de 2 km entre nodos únicamente para el caso de estudio de circuitos eléctricos, priorizando interacciones locales y reduciendo el ruido de conexiones distantes. En contraste, para los casos de estudio residencial, comercial y oficial, se exploraron radios variables de 250 m, 500 m y 750 m, diseñados para capturar relaciones entre clientes cercanos y distantes dentro de la red eléctrica. Para cada caso de estudio (residencial, comercial, oficial y circuitos), se entrenan modelos independientes, ajustando parámetros según las características específicas de los circuitos o usuarios asignados. Esta estrategia permite adaptar la complejidad del modelo a la heterogeneidad de la demanda, mejorando la precisión predictiva en escenarios con distintas escalas espaciales.
+El módulo de aprendizaje automático propone un enfoque para desarrollar modelos que integren dependencias espacio-temporales en la predicción de demanda. Para ello, se entrenan modelos MPNNLSTM y GCLSTM, optimizando parámetros mediante búsqueda por permutación para horizontes de 1, 3, 6, 12 y 24 horas . Los resultados se comparan con un modelo base CNN-LSTM (que utiliza únicamente datos temporales), validando la mejora estadística al incorporar la dimensión espacial. Para los casos de estudio residencial, comercial y oficial, los grafos se construyen utilizando radios variables de 250 m, 500 m y 750 m, con el objetivo de capturar tanto las relaciones entre clientes cercanos como distantes dentro de la red eléctrica. Para cada uno de estos casos, se entrenan modelos independientes, ajustando los parámetros según las características específicas de los usuarios asignados. Esta estrategia permite adaptar la complejidad del modelo a la heterogeneidad de la demanda, mejorando la precisión predictiva en escenarios con diferentes escalas espaciales.
 
 La metodología se limita a los casos de estudio mencionados debido a la baja representación de usuarios industriales en el área urbana. Aunque estos representan el 11% de la base de datos, sus ubicaciones dispersas dificultan la captura de relaciones espaciales significativas con los radios seleccionados (250 m–750 m). La estructura de grafos, con nodos centrados en áreas de influencia y conexiones ponderadas por proximidad geográfica, demostró ser clave para capturar correlaciones locales entre circuitos y subestaciones, posicionando a las GNNT como herramientas esenciales para mejorar la precisión en horizontes temporales variables y adaptarse a dinámicas de demanda no lineales.
 
@@ -49,26 +49,51 @@ Cada uno de estos grafos puede utilizarse para realizar predicciones, como ident
 
 # Contexto y Objetivos
 
-El algoritmo MPNNLSTM combina dos potentes enfoques en el análisis de datos: la capacidad de los **Message Passing Neural Networks (MPNN)** para modelar relaciones complejas en grafos y la habilidad de las **Long Short-Term Memory (LSTM)** para capturar dependencias temporales. Este enfoque es ideal para analizar grafos temporales, donde no solo es importante entender las interacciones estructurales entre los nodos, sino también cómo estas interacciones cambian y evolucionan con el tiempo.
+El algoritmo MPNNLSTM integra redes neuronales de grafos y modelos LSTM para analizar datos espacio-temporales, permitiendo capturar tanto las relaciones entre nodos como las dependencias a lo largo del tiempo. De forma similar, CGNNLSTM combina la convolución en grafos con LSTM, facilitando el modelado conjunto de la estructura de la red y la evolución temporal de los datos. Este enfoque es ideal para analizar grafos temporales, donde no solo es importante entender las interacciones estructurales entre los nodos, sino también cómo estas interacciones cambian y evolucionan con el tiempo.
 
-## Contexto: Neural Message Passing
+## Contexto: Message Passing Neural Networks (MPNN)
 
-Los Message Passing Neural Networks (MPNN) son un tipo de red neuronal diseñada específicamente para trabajar con datos estructurados en grafos. Durante cada iteración del paso de mensajes, cada nodo en el grafo actualiza su representación (embedding) en función de la información agregada de sus vecinos en el grafo. Esto permite capturar la estructura local del grafo y cómo las relaciones entre nodos impactan sus características.
+Los **Message Passing Neural Networks (MPNN)** son un tipo de red neuronal diseñada específicamente para trabajar con datos estructurados en grafos. El enfoque fundamental de los MPNN consiste en permitir que cada nodo en el grafo actualice su representación (embedding) mediante la agregación de información de sus nodos vecinos a través de un proceso iterativo de paso de mensajes.
 
-Formalmente, en cada iteración del MPNN:
+### Principios Fundamentales
 
-- Los nodos envían mensajes a sus vecinos.
+Durante cada iteración del proceso de paso de mensajes:
+- Los nodos envían mensajes a sus vecinos
+- Estos mensajes son agregados usando una función que resume la información del vecindario
+- Una función de actualización ajusta la representación de cada nodo utilizando tanto la información previa como el mensaje recibido
 
-- Estos mensajes son agregados usando una función que resume la información del vecindario.
+### Formalización Matemática
 
-- Luego, una función de actualización ajusta la representación de cada nodo utilizando tanto la información previamente almacenada como el mensaje recibido.
+El proceso de MPNN se estructura en dos fases principales:
 
-Al final del proceso de pasos de mensajes, cada nodo tendrá una representación enriquecida que refleja tanto sus propias características como las de sus vecinos. Este enfoque se utiliza para generar embeddings no solo para nodos individuales, sino también para subgrafos o incluso grafos completos.
+**1. Fase de Paso de Mensajes (T pasos de tiempo):**
 
-*h*<sub>*u*</sub><sup>(*k* + 1)</sup> = UPDATE<sup>(*k*)</sup>(*h*<sub>*u*</sub><sup>(*k*)</sup>, AGGREGATE<sup>(*k*)</sup>({*h*<sub>*v*</sub><sup>(*k*)</sup> : ∀*v* ∈ *N*(*u*)}))
- = UPDATE<sup>(*k*)</sup>(*h*<sub>*u*</sub><sup>(*k*)</sup>, *m*<sub>*N*(*u*)</sub><sup>(*k*)</sup>)
+$$
+m_v^{(t+1)} = \sum_{w \in N(v)} M_t(h_v^{(t)}, h_w^{(t)}, e_{vw})
+$$
 
-*z*<sub>*u*</sub> = *h*<sub>*u*</sub><sup>(*K*)</sup>,  ∀*u* ∈ *V*
+$$
+h_v^{(t+1)} = U_t(h_v^{(t)}, m_v^{(t+1)})
+$$
+
+**2. Fase de Lectura:**
+
+$$
+\hat{y} = R(\{h_v^{(T)} : v \in G\})
+$$
+
+Donde:
+- $h_v^{(t)}$ es el estado oculto del nodo $v$ en el tiempo $t$
+- $m_v^{(t+1)}$ es el mensaje agregado para el nodo $v$
+- $N(v)$ denota los vecinos del nodo $v$ en el grafo $G$
+- $e_{vw}$ representa las características de la arista entre nodos $v$ y $w$
+- $M_t$, $U_t$ y $R$ son funciones diferenciables aprendibles
+
+### Características Clave
+
+- **Invarianza a permutaciones:** El modelo es invariante a los isomorfismos de grafos
+- **Flexibilidad:** Las funciones $M_t$, $U_t$ y $R$ pueden ser redes neuronales complejas
+- **Escalabilidad:** Adecuado para grafos de diferentes tamaños y estructuras
 
 <p align="center">
   <img src="img/MPNN_G.png" alt="Gráfico de resultados" width="500"/>
@@ -76,9 +101,137 @@ Al final del proceso de pasos de mensajes, cada nodo tendrá una representación
   <em>En una red neuronal de paso de mensajes, un nodo agrega información de sus vecinos, que a su vez también recopilan información de sus respectivos vecindarios. Esto crea una estructura en árbol   alrededor del nodo objetivo, reflejando la jerarquía de la propagación de mensajes en el grafo.</em>
 </p>
 
+## Contexto: Graph Convolutional Networks (GCN)
+
+Las **Graph Convolutional Networks (GCN)** generalizan las operaciones de convolución tradicionales a estructuras de grafos irregulares. El modelo implementa aproximaciones basadas en polinomios de Chebyshev para realizar convoluciones eficientes en el dominio espectral del grafo.
+
+### Aproximación Espectral
+
+La convolución espectral en grafos se define como:
+
+$$
+g_\theta \star x = U g_\theta U^T x
+$$
+
+Donde $U$ contiene los vectores propios del Laplaciano normalizado $L = I_N - D^{-1/2} A D^{-1/2}$.
+
+### Aproximación de Chebyshev
+
+Para evitar la complejidad computacional $O(N^2)$, se utiliza una aproximación de polinomios de Chebyshev:
+
+$$
+g_{\theta'}(\Lambda) = \sum_{k=0}^{K} \theta'_k T_k(\tilde{\Lambda})
+$$
+
+Con $\tilde{\Lambda} = \frac{2}{\lambda_{max}} \Lambda - I_N$, donde $T_k(x)$ son los polinomios de Chebyshev definidos recursivamente:
+- $T_0(x) = 1$
+- $T_1(x) = x$
+- $T_k(x) = 2xT_{k-1}(x) - T_{k-2}(x)$
+
+### Simplificación de Primer Orden
+
+Para $K=1$ y $\lambda_{max} \approx 2$, la convolución se simplifica a:
+
+$$
+g_\theta \star x \approx \theta'_0 x + \theta'_1 (L - I_N)x = \theta'_0 x - \theta'_1 D^{-1/2} A D^{-1/2} x
+$$
+
+### Regla de Propagación Final
+
+Con la restricción $\theta = \theta'_0 = -\theta'_1$ y renormalización, se obtiene:
+
+$$
+H^{(l+1)} = \sigma\left(\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} H^{(l)} W^{(l)}\right)
+$$
+
+Donde:
+- $\tilde{A} = A + I_N$ (matriz de adyacencia con auto-conexiones)
+- $\tilde{D}_{ii} = \sum_j \tilde{A}_{ij}$ (matriz de grados renormalizada)
+- $W^{(l)}$ es la matriz de pesos entrenables de la capa $l$
+- $\sigma(\cdot)$ es la función de activación (típicamente ReLU)
+
+### Generalización Multi-canal
+
+Para señales con múltiples características ($C$ canales de entrada, $F$ filtros):
+
+$$
+Z = \tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} X \Theta
+$$
+
+Donde $\Theta \in \mathbb{R}^{C \times F}$ y la complejidad computacional es $O(|E|FC)$.
+
+### Ventajas de GCN
+
+- **Eficiencia computacional:** Complejidad lineal en el número de aristas
+- **Localización:** Captura información del vecindario de orden $K$
+- **Escalabilidad:** Aplicable a grafos grandes mediante implementación dispersa
+- **Flexibilidad:** Fácil integración con otras arquitecturas como LSTM para análisis espacio-temporales
+
+Ambos modelos, MPNN y GCN, constituyen los fundamentos teóricos para la implementación de los algoritmos MPNNLSTM y CGNNLSTM utilizados en la predicción de demanda eléctrica espacio-temporal.
+
 ## Contexto: LSTM para Captura Temporal
 
-La arquitectura LSTM es una variación de las redes recurrentes, diseñada para capturar relaciones y patrones en secuencias temporales largas. En el contexto de los grafos temporales, el LSTM permite modelar cómo las representaciones de los nodos evolucionan a lo largo del tiempo. Esto es especialmente importante en situaciones donde la dinámica de las conexiones entre nodos cambia en función del tiempo o de eventos específicos.
+La arquitectura **Long Short-Term Memory (LSTM)** es una variación especializada de las redes neuronales recurrentes, diseñada específicamente para abordar el problema del desvanecimiento del gradiente y capturar dependencias temporales a largo plazo en secuencias de datos. En el contexto de los grafos temporales, el LSTM permite modelar cómo las representaciones de los nodos evolucionan a lo largo del tiempo, siendo especialmente importante en situaciones donde la dinámica de las conexiones entre nodos cambia en función del tiempo o de eventos específicos.
+
+### Arquitectura Fundamental de LSTM
+
+La arquitectura LSTM está compuesta por una **celda de memoria** y tres **puertas de control** que regulan el flujo de información:
+
+1. **Puerta de olvido (Forget Gate):** Determina qué información del estado de celda anterior debe ser descartada
+2. **Puerta de entrada (Input Gate):** Controla qué nueva información será almacenada en el estado de celda
+3. **Puerta de salida (Output Gate):** Decide qué partes del estado de celda serán utilizadas para generar la salida
+
+### Formalización Matemática
+
+Para un LSTM estándar, las operaciones en cada paso de tiempo $t$ se definen como:
+
+**Puerta de olvido:**
+$$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$$
+
+**Puerta de entrada:**
+$$i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$$
+
+**Estado candidato:**
+
+$$\tilde{C}_t = \tanh(W_c \cdot [h_{t-1}, x_t] + b_c)$$
+
+**Actualización del estado de celda:**
+$$C_t = f_t \cdot C_{t-1} + i_t \cdot \tilde{C}_t$$
+
+**Puerta de salida:**
+$$o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$$
+
+**Estado oculto:**
+$$h_t = o_t \cdot \tanh(C_t)$$
+
+Donde:
+- $\sigma$ es la función sigmoide
+- $W_f, W_i, W_C, W_o$ son matrices de pesos entrenables
+- $b_f, b_i, b_C, b_o$ son vectores de sesgo
+- $h_{t-1}$ es el estado oculto anterior
+- $x_t$ es la entrada en el tiempo $t$
+
+### Integración con Grafos Temporales
+
+En el contexto de grafos temporales, el LSTM se integra con las operaciones de agregación de grafos para capturar tanto las **dependencias temporales** como las **relaciones espaciales**. Esta integración permite:
+
+- **Memoria a largo plazo:** Mantener información relevante sobre patrones temporales observados en pasos de tiempo anteriores
+- **Actualización selectiva:** Incorporar selectivamente nueva información basada en la estructura del grafo y las características temporales
+- **Modelado dinámico:** Adaptar las representaciones de los nodos conforme la estructura del grafo evoluciona
+
+### Ventajas para Análisis Espacio-Temporal
+
+1. **Captura de patrones complejos:** Habilidad para identificar patrones temporales no lineales en la evolución de los grafos
+2. **Manejo de secuencias largas:** Capacidad para mantener información relevante durante períodos prolongados
+3. **Flexibilidad arquitectural:** Facilita la integración con diferentes tipos de capas de agregación de grafos (GCN, MPNN, etc.)
+
+### Limitaciones y Consideraciones
+
+- **Complejidad computacional:** El procesamiento secuencial puede ser costoso para grafos grandes
+- **Dependencia del orden temporal:** Requiere una secuencia ordenada de instantáneas del grafo
+- **Sensibilidad a la inicialización:** Los estados iniciales pueden afectar significativamente el rendimiento
+
+En el contexto específico de la predicción de demanda eléctrica, el LSTM permite capturar patrones temporales complejos como ciclos diarios, semanales y estacionales, mientras que su integración con componentes de grafos facilita el modelado de las interdependencias espaciales entre usuarios de la red eléctrica.
 
 ## Objetivo del Algoritmo MPNNLSTM
 
